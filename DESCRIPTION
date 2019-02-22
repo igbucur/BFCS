@@ -1,13 +1,19 @@
 Package: bfcs
-Title: What the Package Does (One Line, Title Case)
+Title: Bayes Factors for Covariance Structures
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Ioan Gabriel",
            family = "Bucur",
            role = c("aut", "cre"),
            email = "g.bucur@cs.ru.nl")
-Description: What the package does (one paragraph).
-License: What license it uses
+Description: This is an implementation of the algorithm "Bayes Factors for 
+  Covariance Structures", which appears in the Proceedings of the 9th 
+  International Conference on Probabilistic Graphical Models (PGM2018).
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
