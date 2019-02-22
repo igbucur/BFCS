@@ -18,6 +18,9 @@ nrep <- 1000
 prior_DAG <- uniform_prior_GRN_DAG()
 prior_DMAG <- uniform_prior_GRN_DMAG()
 
+# create results subfolder if it is does not already exist
+dir.create('results', showWarnings = FALSE)
+
 
 # 1a.  Multivariate normal data, true (causal) model -----------------------------
 
@@ -117,7 +120,7 @@ save(seed_T_norm, seed_I_norm, seed_F_norm,
      gamma_T_norm, gamma_I_norm, gamma_F_norm,
      beta_T_norm, beta_F_norm, alpha_I_norm, alpha_F_norm,
      Bfs_seq_T_norm, Bfs_seq_I_norm, Bfs_seq_F_norm,
-     nobs_seq, nrep, file = '~/CHiLL/results/PGM/BFCS_consistency_norm_fixparam.RData')
+     nobs_seq, nrep, file = 'results/consistency_norm.RData')
 
 
 # 2a. X_1 binomial distributed, causal model ------------------------------
@@ -227,7 +230,7 @@ save(seed_T_binom, seed_I_binom, seed_F_binom,
      gamma_T_binom, gamma_I_binom, gamma_F_binom,
      beta_T_binom, beta_F_binom, alpha_I_binom, alpha_F_binom,
      Bfs_seq_T_binom, Bfs_seq_I_binom, Bfs_seq_F_binom,
-     nobs_seq, nrep, file = '~/CHiLL/results/PGM/BFCS_consistency_binom_fixparam.RData')
+     nobs_seq, nrep, file = 'results/consistency_binom.RData')
 
 
 # 3a. Binomial X_1, causal model, inverse rank transformation for T -------
@@ -348,7 +351,7 @@ save(seed_T_irank, seed_I_irank, seed_F_irank,
      gamma_T_irank, gamma_I_irank, gamma_F_irank,
      beta_T_irank, beta_F_irank, alpha_I_irank, alpha_F_irank,
      Bfs_seq_T_irank, Bfs_seq_I_irank, Bfs_seq_F_irank,
-     nobs_seq, nrep, file = '~/CHiLL/results/PGM/BFCS_consistency_irank_fixparam.RData')
+     nobs_seq, nrep, file = 'results/consistency_irank.RData')
 
 
 # 4. Use Kendall / Spearman correlation -----------------------------------
