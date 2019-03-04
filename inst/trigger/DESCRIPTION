@@ -1,0 +1,21 @@
+Package: trigger
+Type: Package
+Title: Transcriptional Regulatory Inference from Genetics of Gene
+        ExpRession
+Version: 1.28.0
+Author: Lin S. Chen <lchen@health.bsd.uchicago.edu>, Dipen P. Sangurdekar <dps@genomics.princeton.edu> and John D. Storey <jstorey@princeton.edu>
+Maintainer: John D. Storey <jstorey@princeton.edu>
+Depends: R (>= 2.14.0), corpcor, qtl
+Imports: qvalue, methods, graphics, sva
+Description: This R package provides tools for the statistical analysis of integrative genomic data that involve some combination of: genotypes, high-dimensional intermediate traits (e.g., gene expression, protein abundance), and higher-order traits (phenotypes). The package includes functions to: (1) construct global linkage maps between genetic markers and gene expression; (2) analyze multiple-locus linkage (epistasis) for gene expression; (3) quantify the proportion of genome-wide variation explained by each locus and identify eQTL hotspots; (4) estimate pair-wise causal gene regulatory probabilities and construct gene regulatory networks; and (5) identify causal genes for a quantitative trait of interest. 
+biocViews: GeneExpression, SNP, GeneticVariability, Microarray,
+        Genetics
+Lazyload: no
+License: GPL-3
+Packaged: 2018-10-30 23:32:05 UTC; biocbuild
+NeedsCompilation: yes
+git_url: https://git.bioconductor.org/packages/trigger
+git_branch: RELEASE_3_8
+git_last_commit: 0c58b84
+git_last_commit_date: 2018-10-30
+Date/Publication: 2018-10-30
