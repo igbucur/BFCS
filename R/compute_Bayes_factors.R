@@ -1,4 +1,4 @@
-#' Bayes Factor Computation for a three-variable submodel
+#' Bayes Factor Computation for a three-variable submodel.
 #'
 #' @param corr Input 3x3 correlation matrix
 #' @param no_samples Number of samples
@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-compute_Bayes_factors <- function(corr, no_samples = 112) {
+compute_Bayes_factors <- function(corr, no_samples) {
   stopifnot(nrow(corr) == 3)
 
   # if (eigen(corr)$values[3] < 0) return (NA)
@@ -83,7 +83,7 @@ compute_Bayes_factors <- function(corr, no_samples = 112) {
 }
 
 
-#' Vectorized compute Bayes factors of correlation structures
+#' Vectorized compute Bayes factors of covariance structures.
 #'
 #' @param c12 vector of correlations between X_1 and X_2
 #' @param c13 vector of correlations between X_1 and X_3
@@ -94,7 +94,7 @@ compute_Bayes_factors <- function(corr, no_samples = 112) {
 #' @export
 #'
 #' @examples
-compute_Bayes_factors_vectorized <- function(c12, c13, c23, no_samples = 112) {
+compute_Bayes_factors_vectorized <- function(c12, c13, c23, no_samples) {
   
   vecl <- length(c12)
   stopifnot(vecl == length(c13))

@@ -5,14 +5,14 @@
 #' @param nobs Integer number of observations in the generated data set.
 #' @param prob_edge Numeric probability of having a causal interaction (edge)
 #' between two expression traits. Passed on to \link[pcalg]{randomDAG}.
-#' @param seed Integer seed for random number generation.
+#' @param seed Integer seed for reproducible random number generation.
 #'
-#' @return A data set consisting of nobs samples from a random generated gene
-#' regulatory network. This includes \emph{ngen} binomially distributed variables
-#' representing the genetic markers associated with the genetic makeup of each
-#' individual observation. It also includes \emph{nexp} columns representing 
-#' the gene expression levels of \emph{nexp} traits, which have an underlying 
-#' causal graph describing their interactions.
+#' @return A data set consisting of \emph{nobs} samples from a random generated 
+#' gene regulatory network. This includes \emph{ngen} binomially distributed 
+#' variables representing the genetic markers associated with the genetic makeup 
+#' of each individual observation. It also includes \emph{nexp} columns 
+#' representing the gene expression levels of \emph{nexp} traits, which have an 
+#' underlying causal graph describing their interactions.
 #' @export
 #'
 #' @examples simulate_GRN(10, 10, 100, 0.1, 1634)
