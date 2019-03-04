@@ -5,7 +5,7 @@
 ## Load libraries and scripts
 source('R/compute_Bayes_factors.R')
 source('R/compute_prior_structures.R')
-library(pcalg)
+source('R/simulate_GRN.R')
 library(pbmcapply)
 library(trigger)
 
@@ -21,43 +21,10 @@ set.seed(1020)
 ngen <- 100 # number of gene markers
 nexp <- ngen # number of gene expression levels
 
-simulate_GRN <- function(ngen, nexp, nobs, prob_edge, seed = NULL) {
-  
-  set.seed(seed)
-  
-  # dense graph
-  G <- pcalg:::randomDAG(nexp, prob_edge, lB = 1, uB = 1, V = paste0("T", 1:nexp))
-  
-  stopifnot(nexp >= ngen)
-  
-  ## Generate data
-  
-  theta <- runif(ngen, 0.1, 0.5) 
-  
-  L <- t(sapply(theta, rbinom, n = nobs, size = 1)) + 1
-  rownames(L) <- paste0("L", 1:ngen)
-  L.pos <- matrix(1, ngen, 2); L.pos[, 2] <- 1:ngen # one chromosome, each in the same position
-  
-  
-  B <- t(as(G, "matrix")); print(paste("Number of edges:", sum(B)))
-  C <- matrix(0, nexp, ngen); C[1:ngen, 1:ngen] <- diag(ngen)
-  
-  Tr <- solve(diag(nexp) - B) %*% (C %*% L + matrix(rnorm(nexp * nobs), nexp, nobs))
-  # Tr <- t(apply(Tr, 1, function(row) row / sd(row))) # normalize to Var[X] = 1
-  
-  Trait <- Tr
-  Trait <- t(apply(Tr, 1, function(x) qnorm( rank(x) / (length(x) + 1) ) ) ) # re-normalize data
-  T.pos <- matrix(1, nexp, 3); T.pos[, 2:3] <- 1:nexp
-  
-  data <- t(rbind(L, Tr))
-  cor.matrix <- cor(data) # unnormalized
-  
-  list(L = L, Trait = Trait, L.pos = L.pos, T.pos = T.pos, 
-       cor.matrix = cor.matrix, B = B)
-}
-
 sparse_GRN_n1e2 <- simulate_GRN(ngen, nexp, 100, 1 / nexp, 1020)
 sparse_GRN_n1e3 <- simulate_GRN(ngen, nexp, 1000, 1 / nexp, 1020)
+less_dense_GRN_n1e2 <- simulate_GRN(ngen, nexp, 100, 0.05, 1020)
+less_dense_GRN_n1e3 <- simulate_GRN(ngen, nexp, 1000, 0.05, 1020)
 dense_GRN_n1e2 <- simulate_GRN(ngen, nexp, 100, 0.1, 1020)
 dense_GRN_n1e3 <- simulate_GRN(ngen, nexp, 1000, 0.1, 1020)
 
@@ -89,6 +56,8 @@ run_trigger_simulated_GRN <- function(GRN, sim_name, n_runs = 3, seeds = NULL) {
 
 run_trigger_simulated_GRN(sparse_GRN_n1e2, 'trigger_sparse_n1e2', seeds = trigger_seeds)
 run_trigger_simulated_GRN(sparse_GRN_n1e3, 'trigger_sparse_n1e3', seeds = trigger_seeds)
+run_trigger_simulated_GRN(less_dense_GRN_n1e2, 'trigger_less_dense_n1e2', seeds = trigger_seeds)
+run_trigger_simulated_GRN(less_dense_GRN_n1e3, 'trigger_less_dense_n1e3', seeds = trigger_seeds)
 run_trigger_simulated_GRN(dense_GRN_n1e2, 'trigger_dense_n1e2', seeds = trigger_seeds)
 run_trigger_simulated_GRN(dense_GRN_n1e3, 'trigger_dense_n1e3', seeds = trigger_seeds)
 
@@ -138,6 +107,8 @@ run_BFCS_simulated_GRN <- function(GRN, filename_root) {
 
 run_BFCS_simulated_GRN(sparse_GRN_n1e2, 'BFCS_sparse_n1e2')
 run_BFCS_simulated_GRN(sparse_GRN_n1e3, 'BFCS_sparse_n1e3')
+run_BFCS_simulated_GRN(less_dense_GRN_n1e2, 'BFCS_less_dense_n1e2')
+run_BFCS_simulated_GRN(less_dense_GRN_n1e3, 'BFCS_less_dense_n1e3')
 run_BFCS_simulated_GRN(dense_GRN_n1e2, 'BFCS_dense_n1e2')
 run_BFCS_simulated_GRN(dense_GRN_n1e3, 'BFCS_dense_n1e3')
 
