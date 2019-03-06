@@ -25,7 +25,8 @@ Imports: Rcpp,
 RdMacros: Rdpack
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
 LinkingTo: Rcpp,
     RcppArmadillo
