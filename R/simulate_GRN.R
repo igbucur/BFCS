@@ -34,19 +34,19 @@ simulate_GRN <- function(ngen, nexp, nobs, prob_edge, seed = NULL) {
   L.pos <- matrix(1, ngen, 2); L.pos[, 2] <- 1:ngen # one chromosome, each in the same position
   
   
-  B <- t(as(G, "matrix")); print(paste("Number of edges:", sum(B)))
+  B <- t(as(G, "matrix")) # print(paste("Number of edges:", sum(B)))
   C <- matrix(0, nexp, ngen); C[1:ngen, 1:ngen] <- diag(ngen)
   
   Tr <- solve(diag(nexp) - B) %*% (C %*% L + matrix(rnorm(nexp * nobs), nexp, nobs))
   # Tr <- t(apply(Tr, 1, function(row) row / sd(row))) # normalize to Var[X] = 1
   
   Trait <- Tr
-  Trait <- t(apply(Tr, 1, function(x) qnorm( rank(x) / (length(x) + 1) ) ) ) # re-normalize data
+  # Trait <- t(apply(Tr, 1, function(x) qnorm( rank(x) / (length(x) + 1) ) ) ) # re-normalize data
   T.pos <- matrix(1, nexp, 3); T.pos[, 2:3] <- 1:nexp
   
   data <- t(rbind(L, Tr))
-  cor.matrix <- cor(data) # unnormalized
   
   list(L = L, Trait = Trait, L.pos = L.pos, T.pos = T.pos, 
-       cor.matrix = cor.matrix, B = B)
+       cov.matrix = cov(data), means = colMeans(data),
+       cor.matrix = cor(data), B = B, num_edges = sum(B))
 }
