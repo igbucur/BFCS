@@ -12,7 +12,7 @@ Description: This is an implementation of the algorithm "Bayes Factors for
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Imports: Rcpp,
     Rdpack,
     corpcor,
@@ -26,7 +26,12 @@ RdMacros: Rdpack
 Suggests: 
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    tidyverse,
+    ggthemes,
+    ggpubr,
+    precrec,
+    DescTools
 VignetteBuilder: knitr
 LinkingTo: Rcpp,
     RcppArmadillo
