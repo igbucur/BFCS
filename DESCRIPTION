@@ -1,18 +1,22 @@
-Package: bfcs
+Package: BFCS
 Title: Bayes Factors for Covariance Structures
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person(given = "Ioan Gabriel",
            family = "Bucur",
            role = c("aut", "cre"),
            email = "g.bucur@cs.ru.nl")
-Description: This is an implementation of the algorithm "Bayes Factors for 
-  Covariance Structures", which appears in the Proceedings of the 9th 
-  International Conference on Probabilistic Graphical Models (PGM2018).
-License: GPL-3
+Description: This is an implementation of the BFCS algorithm, which is described
+  in the article "A Bayesian Approach for Inferring Local Causal Structure in 
+  Gene Regulatory Networks", published in Proceedings of Machine Learning 
+  Research, Volume 72 (PGM 2018), and in the extension "Large-scale local causal 
+  inference of gene regulatory relationships", published in the International
+  Journal of Approximate Reasoning, Volume 115.
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Depends: R (>= 3.5.0)
 Imports: Rcpp,
     Rdpack,
     corpcor,
@@ -23,15 +27,18 @@ Imports: Rcpp,
     BiDAG,
     pcalg
 RdMacros: Rdpack
+Remotes: igbucur/trigger
 Suggests: 
     knitr,
+    kableExtra,
     rmarkdown,
     testthat,
     tidyverse,
     ggthemes,
     ggpubr,
     precrec,
-    DescTools
+    DescTools,
+    methods
 VignetteBuilder: knitr
 LinkingTo: Rcpp,
     RcppArmadillo
