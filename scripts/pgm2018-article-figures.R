@@ -1,14 +1,14 @@
 
 # 0. SETUP -------------------------------------------------------------------
 
-library(ggplot2) # plotting the ROC / PRC curves (part of tidyverse)
-library(dplyr) # data set processing (part of tidyverse)
+library(tidyverse) # ggplot2 (plotting), dplyr + tidyr (data manipulation)
+library(reshape2) # general data reshaping
 library(ggthemes) # provides nice themes for ggplots
 library(precrec) # needed for computing the ROC / PRC values
 library(DescTools) # for computing the Brier score
 library(ggpubr) # needed for plot layout (ggarrange)
 
-# off_diagonal <- function(m) m[lower.tri(m) | upper.tri(m)]
+off_diagonal <- function(m) m[lower.tri(m) | upper.tri(m)]
 # TPR <- function(prob, g) sum(prob * g) / sum(g)
 # FPR <- function(prob, g) sum(prob * (1 - g)) / sum(1 - g)
 # sG_structure <- as.matrix(read.table('inst/extdata/sG_structure.txt'))
@@ -16,15 +16,17 @@ library(ggpubr) # needed for plot layout (ggarrange)
 
 source('R/compute_prior_structures.R')
 
-figures_dir <- "man/figures/"
+# Create folder where to put article figures
+figures_dir <- "figures/"
 if (!dir.exists(figures_dir)) dir.create(figures_dir)
 
 prior_DAG <- uniform_prior_GRN_DAG()
 prior_DMAG <- uniform_prior_GRN_DMAG()
-prior_ADMG <- uniform_prior_GRN_ADMG()
+# prior_ADMG <- uniform_prior_GRN_ADMG()
 
 
-# 1. Figure 3: Consistency of BFCS -------------------------------------------
+
+# 4.1 Consistency of Detecting Local Causal Structures - Figure 3 ---------
 
 #' Produce plot that shows the consistency of BFCS using simulation experiments.
 #'
@@ -36,52 +38,39 @@ prior_ADMG <- uniform_prior_GRN_ADMG()
 #' @return ggplot showing consistency of BFCS in finding the correct causal model
 #' 
 #' @keywords internal
-plot_consistency_data <- function(bayes_factors, priors = list(prior_DAG, prior_DMAG, prior_ADMG), 
-                                  str_name = c('DAG', 'DMAG', 'ADMG')) {
+plot_consistency_data <- function(Bayes_factors, prior = prior_DMAG) {
   
-  df <- do.call('rbind', lapply(1:length(priors), function(i) {
-    prob <- sapply(bayes_factors, function(Bfs) {
-      Bfs <- Bfs * priors[[i]]
-      Bfs[6, ] / colSums(Bfs)
-    })
-    prob %>%
-      melt() %>%
-      rename(rep = Var1, nobs = Var2) %>%
-      mutate(nobs = nobs_seq[nobs]) %>%
-      mutate(str = str_name[i])
-  }))
+  posterior_probabilities <- sapply(Bayes_factors, function(Bfs) {
+    Bfs <- Bfs * prior
+    Bfs[6, ] / colSums(Bfs)
+  }) %>%
+    reshape2::melt() %>%
+    dplyr::rename(rep = Var1, nobs = Var2) %>%
+    dplyr::mutate(nobs = nobs_seq[nobs])
   
-  ggplot(df, aes(x = log10(nobs), y = value, group = interaction(nobs, str), color = str)) +
-    geom_boxplot(outlier.alpha = 0.1, color = 'darkblue', fill = 'lightblue') + 
-    ylim(c(0, 1)) +
+  ggplot(posterior_probabilities, aes(x = log10(nobs), y = value, group = log10(nobs))) +
+    geom_boxplot(outlier.alpha = 0.1, color = 'darkblue', fill = 'lightblue') + ylim(c(0, 1)) +
     xlab("Number of samples on the base-10 logarithmic scale") +
-    ylab("Probability of causal model") +
-    labs(color = "Causal structure") + 
-    theme_classic() +
-    theme(legend.position = "top", text = element_text(size = 20),
-          axis.title = element_text(size = 25),
-          axis.text = element_text(size = 25))
+    ylab("Probability of causal model") + IJAR_theme
 }
 
-nobs_seq <- c(100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000)
+load('data/Bayes_factors_consistency.RData')
 
-load('data/consistency_simulation_experiment_norm.RData')
-load('data/consistency_simulation_experiment_binom.RData')
+consistency_plots <- list(
+  plot_consistency_data(Bayes_factors_consistency$gaussian$causal),
+  plot_consistency_data(Bayes_factors_consistency$gaussian$independent),
+  plot_consistency_data(Bayes_factors_consistency$gaussian$full),
+  plot_consistency_data(Bayes_factors_consistency$binomial$causal),
+  plot_consistency_data(Bayes_factors_consistency$binomial$independent),
+  plot_consistency_data(Bayes_factors_consistency$binomial$full)
+)
 
-cases <- paste(rep(c("T", "I", "F"), 2), rep(c("norm", "binom"), each = 3), sep = "_")
+ggsave(paste0(figures_dir, "PGM_Figure_3.pdf"), 
+       ggpubr::ggarrange(plotlist = consistency_plots, nrow = 2, ncol = 3),
+       width = 16, height = 9)
 
-for(case in cases) {
-  ggsave(paste0(figures_dir, "PGM_consistency_", case, ".pdf"), 
-         plot_consistency_data(
-           get(paste0("Bfs_seq_", case)), 
-           priors = list(prior_DMAG), str_name = "DMAG"
-         ) + guides(color = FALSE),
-         width = 10, height = 5
-  )
-}
 
-# 2. Figure 4: Comparing the performance of Trigger and BFCS -----------------
-
+# 4.2 Causal Discovery in Gene Regulatory Networks - Figure 4 -------------
 
 #' Plot precision-recall or ROC curve to compare various algorithms.
 #'
@@ -154,20 +143,19 @@ combined_plot <- ggpubr::ggarrange(
   common.legend = TRUE, legend = "bottom"
 )
 
-ggsave(paste0(figures_dir, "PGM_PRC_ROC_curves.pdf"), onefile = FALSE)
+ggsave(paste0(figures_dir, "PGM_Figure_4.pdf"), onefile = FALSE)
 
 
-# 3. Comparing the calibration using the Brier score ----------------------
 
-#' Plot precision-recall or ROC curve to compare various algorithms.
+# 4.2 Causal Discovery in Gene Regulatory Networks - Table 2 --------------
+
+#' Compute the Brier calibration score to compare the algorithms.
 #'
-#' @param df Data frame in long table format containing posterior probabilities 
-#' of algorithms under comparison.
-#' @param type String specifying type of plot we want to produce (PRC or ROC)
-#'
+#' @param datafile_root string; root directory for data files
+#' @param simulations character vector; simulation acronyms
+#' @param algorithms character vector; algorithm acronyms
+#' 
 #' @return
-#'
-#' @keywords internal
 compute_Brier_scores <- function(
   datafile_root = 'inst/extdata/', simulations = c("sG_1e2", "sG_1e3", "dG_1e2", "dG_1e3"),
   algorithms = c(paste0("trigger_", 1:3), "BFCS_DAG", "BFCS_DMAG", "BGe_scaled")
@@ -197,8 +185,63 @@ Brier_scores <- tibble::as_tibble(compute_Brier_scores(), rownames = "simulation
   dplyr::mutate(Samples = as.integer(substr(simulation, 4, 6))) %>%
   dplyr::mutate(Graph = ifelse(substr(simulation, 1, 1) == "s", "Sparse", "Dense")) %>%
   dplyr::select(-simulation) %>%
-  tidyr::pivot_wider(names_from = Graph, values_from = trigger:BGe)
+  tidyr::pivot_wider(names_from = Graph, values_from = trigger:BGe) %>%
+  dplyr::relocate(ends_with("Sparse"), .before = trigger_Dense) 
 
-# table is in right format, but still needs a bit of work to get to table itself
-Hmisc::latex(Brier_scores, file = "", digits = 2)
+table_cols <- gsub("_", " ", gsub("_Sparse|_Dense", "", names(Brier_scores)))
+
+# Table format is different from paper but content is identical
+knitr::kable(Brier_scores, format = "latex", digits = 3, booktabs = T, col.names = table_cols, align = "c") %>%
+  kableExtra::kable_styling() %>%
+  kableExtra::add_header_above(c(" " = 1, "Sparse GRN" = 4, "Dense GRN" = 4)) %>% 
+  kableExtra::column_spec(c(1, 5), latex_column_spec = c("c||", "c|")) %>%
+  kableExtra::save_kable(paste0(figures_dir, "PGM_Table_2.pdf"))
+
+
+# 4.3. Comparing Results from an Experiment on Yeast - Table 3 ------------
+
+# Read posterior probabilities for causal regulatory relationships
+load('data/yeast_regulatory_probabilities.RData')
+
+# Top ranked regulated genes are taken from Chen et al. (2008)
+NAM9_regulated_Chen <- c("MDM35", "CBP6", "QRI5", "RSM18", "RSM7", "MRPL11", "MRPL25",
+                         "DLD2", "YPR126C", "MSS116", "AFG3", "SSC1", "MRPL33", "YPR125W")
+
+# Create data frame containing probabilities
+compare_NAM9_regulated_sort_Chen <- data.frame(
+  Rank = 1:length(NAM9_regulated_Chen),
+  Gene = NAM9_regulated_Chen,
+  `Chen et al.` = yeast_trigger_Chen["NAM9", NAM9_regulated_Chen],
+  trigger = yeast_trigger_w50k["NAM9", NAM9_regulated_Chen],
+  BFCS = yeast_BFCS_DMAG["NAM9", NAM9_regulated_Chen],
+  check.names = FALSE
+)
+
+# Create, format and save LaTeX table 
+knitr::kable(compare_NAM9_regulated_sort_Chen[1:10, ], format = "latex", digits = 3, 
+             booktabs = TRUE, row.names = FALSE, align = "l") %>%
+  kableExtra::kable_styling() %>%
+  kableExtra::column_spec(1, latex_column_spec = c("l|")) %>%
+  kableExtra::save_kable(paste0(figures_dir, "PMG_Table_3a.pdf"))
+
+
+# Top ranked regulated genes according to the BFCS DMAG probabilities
+NAM9_regulated_BFCS <- order(yeast_BFCS_DMAG["NAM9", ], decreasing = TRUE)[1:length(NAM9_regulated_Chen)]
+
+# Create data frame containing probabilities
+compare_NAM9_regulated_sort_BFCS <- data.frame(
+  Rank = 1:length(NAM9_regulated_BFCS),
+  Gene = NAM9_regulated_BFCS,
+  `Chen et al.` = yeast_trigger_Chen["NAM9", NAM9_regulated_BFCS],
+  trigger = yeast_trigger_w50k["NAM9", NAM9_regulated_BFCS],
+  BFCS = yeast_BFCS_DMAG["NAM9", NAM9_regulated_BFCS],
+  check.names = FALSE
+)
+
+# Create, format and save LaTeX table 
+knitr::kable(compare_NAM9_regulated_sort_BFCS[1:10, ], format = "latex", digits = 3, 
+             booktabs = TRUE, row.names = FALSE, align = "l") %>%
+  kableExtra::kable_styling() %>%
+  kableExtra::column_spec(1, latex_column_spec = c("l|")) %>%
+  kableExtra::save_kable(paste0(figures_dir, "PGM_Table_3b.pdf"))
 
