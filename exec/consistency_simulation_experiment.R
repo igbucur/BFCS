@@ -18,226 +18,192 @@ source('R/compute_Bayes_factors.R')
 source('R/compute_prior_structures.R')
 
 # Number of replications in each simulation
-nrep <- 1000
-# Number of observations increases logarithmically for each set of simulations
-nobs_seq <- c(100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000)
+num_reps <- 1000
+# Number of observations sequence increases logarithmically for each set of simulations
+num_obs_seq <- c(100, 300, 1000, 3000)
+# num_obs_seq <- c(100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000)
 
 # Prior on causal structures (DMAG)
 prior_DMAG <- uniform_prior_GRN_DMAG()
 
-# create results subfolder if it is does not already exist
-dir.create('results', showWarnings = FALSE)
+# List in which we will store the simulation results
+Bayes_factors_consistency <- list()
+Bayes_factors_consistency$binomial <- list()
+Bayes_factors_consistency$gaussian <- list()
 
+if (Sys.info()['sysname'] == 'Windows') {
+  num_cores <- 1
+} else {
+  num_cores <- parallel::detectCores() / 2
+}
 
 # 1. (X_1, X_2, X_3) is multivariate normal data - (Figure 3a, 3b, 3c) ---------
 
 # Figure 3a - Causal model ----
 
-seed_T_norm <- 1226
-set.seed(seed_T_norm)
+seed_gaussian_causal <- 1226
+set.seed(seed_gaussian_causal)
 
-gamma_T_norm <- rnorm(nrep)
-beta_T_norm <- rnorm(nrep)
+gamma_gaussian_causal <- rnorm(num_reps)
+beta_gaussian_causal <- rnorm(num_reps)
 
-Bfs_seq_T_norm <- lapply(nobs_seq, function(nobs) {
-  print(paste("No. Obs", nobs))
-  corr_mats <- do.call('cbind', pbmclapply(1:nrep, function(i) {
-    L <- rnorm(nobs)
-    T_i <- gamma_T_norm[i] * L + rnorm(nobs)
-    T_j <- beta_T_norm[i] * T_i + rnorm(nobs)
+Bayes_factors_consistency$gaussian$causal <- lapply(num_obs_seq, function(num_obs) {
+  print(paste("Number of observations:", num_obs))
+  corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
+    L <- rnorm(num_obs)
+    T_i <- gamma_gaussian_causal[i] * L + rnorm(num_obs)
+    T_j <- beta_gaussian_causal[i] * T_i + rnorm(num_obs)
     
     cor <- cor(cbind(L, T_i, T_j))
     cor[upper.tri(cor)]
-  }))
+  }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], no_samples = nobs)
+  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 })
-
-print(sapply(Bfs_seq_T_norm, function(Bfs) {
-  Bfs <- Bfs * prior_DMAG
-  mean(Bfs[6, ] / colSums(Bfs))
-}))
 
 
 # Figure 3b - Independent Model ----
 
-seed_I_norm <- 1500
-set.seed(seed_I_norm)
+seed_gaussian_independent <- 1500
+set.seed(seed_gaussian_independent)
 
-gamma_I_norm <- rnorm(nrep)
-alpha_I_norm <- rnorm(nrep)
+gamma_gaussian_independent <- rnorm(num_reps)
+alpha_gaussian_independent <- rnorm(num_reps)
 
-Bfs_seq_I_norm <- lapply(nobs_seq, function(nobs) {
-  print(paste("No. Obs", nobs))
+Bayes_factors_consistency$gaussian$independent <- lapply(num_obs_seq, function(num_obs) {
+  print(paste("Number of observations:", num_obs))
   
-  corr_mats <- do.call('cbind', pbmclapply(1:nrep, function(i) {
-    L <- rnorm(nobs)
-    T_i <- gamma_I_norm[i] * L + rnorm(nobs)
-    T_j <- alpha_I_norm[i] * L + rnorm(nobs)
+  corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
+    L <- rnorm(num_obs)
+    T_i <- gamma_gaussian_independent[i] * L + rnorm(num_obs)
+    T_j <- alpha_gaussian_independent[i] * L + rnorm(num_obs)
     
     cor <- cor(cbind(L, T_i, T_j))
     cor[upper.tri(cor)]
-  }))
+  }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], no_samples = nobs)
+  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 })
-
-print(sapply(Bfs_seq_I_norm, function(Bfs) {
-  Bfs <- Bfs * prior_DMAG
-  mean(Bfs[6, ] / colSums(Bfs))
-}))
 
 
 # Figure 3c - Full Model ----
 
-seed_F_norm <- 1531
-set.seed(seed_F_norm)
+seed_gaussian_full <- 1531
+set.seed(seed_gaussian_full)
 
-gamma_F_norm <- rnorm(nrep)
-alpha_F_norm <- rnorm(nrep)
-beta_F_norm <- rnorm(nrep)
+gamma_gaussian_full <- rnorm(num_reps)
+alpha_gaussian_full <- rnorm(num_reps)
+beta_gaussian_full <- rnorm(num_reps)
 
-Bfs_seq_F_norm <- lapply(nobs_seq, function(nobs) {
-  print(paste("No. Obs", nobs))
+Bayes_factors_consistency$gaussian$full <- lapply(num_obs_seq, function(num_obs) {
+  print(paste("Number of observations:", num_obs))
   
-  corr_mats <- do.call('cbind', pbmclapply(1:nrep, function(i) {
+  corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
     
-    L <- rnorm(nobs)
-    T_i <- gamma_F_norm[i] * L + rnorm(nobs)
-    T_j <- alpha_F_norm[i] * L + beta_F_norm[i] * T_i + rnorm(nobs)
+    L <- rnorm(num_obs)
+    T_i <- gamma_gaussian_full[i] * L + rnorm(num_obs)
+    T_j <- alpha_gaussian_full[i] * L + beta_gaussian_full[i] * T_i + rnorm(num_obs)
     
     cor <- cor(cbind(L, T_i, T_j))
     cor[upper.tri(cor)]
-  }))
+  }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], no_samples = nobs)
+  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 })
-
-print(sapply(Bfs_seq_F_norm, function(Bfs) {
-  Bfs <- Bfs * prior_DMAG
-  mean(Bfs[6, ] / colSums(Bfs))
-}))
-
-# Save Consistency Evaluation Results ----
-
-save(seed_T_norm, seed_I_norm, seed_F_norm,
-     gamma_T_norm, gamma_I_norm, gamma_F_norm,
-     beta_T_norm, beta_F_norm, alpha_I_norm, alpha_F_norm,
-     Bfs_seq_T_norm, Bfs_seq_I_norm, Bfs_seq_F_norm,
-     nobs_seq, nrep, file = 'results/consistency_norm.RData')
 
 
 ## 2. X_1 is Bernoulli, (X_2, X_3) | X_1 is Gaussian (Figure 3d, 3e, 3f) -------
 
 # Figure 3d - Causal Model ----
 
-seed_T_binom <- 1800
-set.seed(seed_T_binom)
+seed_binomial_causal <- 1800
+set.seed(seed_binomial_causal)
 
-theta_T_binom <- runif(nrep, 0.1, 0.5)
-gamma_T_binom <- rnorm(nrep)
-beta_T_binom <- rnorm(nrep)
+theta_binomial_causal <- runif(num_reps, 0.1, 0.5)
+gamma_binomial_causal <- rnorm(num_reps)
+beta_binomial_causal <- rnorm(num_reps)
 
-Bfs_seq_T_binom <- lapply(nobs_seq, function(nobs) {
-  print(paste("No. Obs", nobs))
+Bayes_factors_consistency$binomial$causal <- lapply(num_obs_seq, function(num_obs) {
+  print(paste("Number of observations:", num_obs))
   
-  corr_mats <- do.call('cbind', pbmclapply(1:nrep, function(i) {
+  corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
     
-    L <- rbinom(nobs, 1, theta_T_binom[i]) + 1
-    T_i <- gamma_T_binom[i] * L + rnorm(nobs)
-    T_j <- beta_T_binom[i] * T_i + rnorm(nobs)
+    L <- rbinom(num_obs, 1, theta_binomial_causal[i]) + 1
+    T_i <- gamma_binomial_causal[i] * L + rnorm(num_obs)
+    T_j <- beta_binomial_causal[i] * T_i + rnorm(num_obs)
     
     cor <- cor(cbind(L, T_i, T_j))
     cor[upper.tri(cor)]
-  }))
+  }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], no_samples = nobs)
+  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 })
-
-print(sapply(Bfs_seq_T_binom, function(Bfs) {
-  Bfs <- Bfs * prior_DMAG
-  mean(Bfs[6, ] / colSums(Bfs))
-}))
 
 # Figure 3e - Independent Model ----
 
-seed_I_binom <- 1611
-set.seed(seed_I_binom)
+seed_binomial_independent <- 1611
+set.seed(seed_binomial_independent)
 
-theta_I_binom <- runif(nrep, 0.1, 0.5)
-gamma_I_binom <- rnorm(nrep)
-alpha_I_binom <- rnorm(nrep)
+theta_binomial_independent <- runif(num_reps, 0.1, 0.5)
+gamma_binomial_independent <- rnorm(num_reps)
+alpha_binomial_independent <- rnorm(num_reps)
 
-Bfs_seq_I_binom <- lapply(nobs_seq, function(nobs) {
-  print(paste("No. Obs", nobs))
+Bayes_factors_consistency$binomial$independent <- lapply(num_obs_seq, function(num_obs) {
+  print(paste("Number of observations:", num_obs))
   
-  corr_mats <- do.call('cbind', pbmclapply(1:nrep, function(i) {
+  corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
     
-    L <- rbinom(nobs, 1, theta_I_binom[i]) + 1
-    T_i <- gamma_I_binom[i] * L + rnorm(nobs)
-    T_j <- alpha_I_binom[i] * L + rnorm(nobs)
+    L <- rbinom(num_obs, 1, theta_binomial_independent[i]) + 1
+    T_i <- gamma_binomial_independent[i] * L + rnorm(num_obs)
+    T_j <- alpha_binomial_independent[i] * L + rnorm(num_obs)
     
     cor <- cor(cbind(L, T_i, T_j))
     cor[upper.tri(cor)]
-  }))
+  }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], no_samples = nobs)
+  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 })
-
-print(sapply(Bfs_seq_I_binom, function(Bfs) {
-  Bfs <- Bfs * prior_DMAG
-  mean(Bfs[6, ] / colSums(Bfs))
-}))
 
 # Figure 3f - Full Model ----
 
-seed_F_binom <- 1958
-set.seed(seed_F_binom)
+seed_binomial_full <- 1958
+set.seed(seed_binomial_full)
 
-theta_F_binom <- runif(nrep, 0.1, 0.5)
-gamma_F_binom <- rnorm(nrep)
-alpha_F_binom <- rnorm(nrep)
-beta_F_binom <- rnorm(nrep)
+theta_binomial_full <- runif(num_reps, 0.1, 0.5)
+gamma_binomial_full <- rnorm(num_reps)
+alpha_binomial_full <- rnorm(num_reps)
+beta_binomial_full <- rnorm(num_reps)
 
-Bfs_seq_F_binom <- lapply(nobs_seq, function(nobs) {
-  print(paste("No. Obs", nobs))
+Bayes_factors_consistency$binomial$full <- lapply(num_obs_seq, function(num_obs) {
+  print(paste("Number of observations:", num_obs))
   
-  corr_mats <- do.call('cbind', pbmclapply(1:nrep, function(i) {
+  corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
     
-    L <- rbinom(nobs, 1, theta_F_binom[i]) + 1
-    T_i <- gamma_F_binom[i] * L + rnorm(nobs)
-    T_j <- alpha_F_binom[i] * L + beta_F_binom[i] * T_i + rnorm(nobs)
+    L <- rbinom(num_obs, 1, theta_binomial_full[i]) + 1
+    T_i <- gamma_binomial_full[i] * L + rnorm(num_obs)
+    T_j <- alpha_binomial_full[i] * L + beta_binomial_full[i] * T_i + rnorm(num_obs)
     
     cor <- cor(cbind(L, T_i, T_j))
     cor[upper.tri(cor)]
-  }))
+  }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], no_samples = nobs)
+  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 })
 
-print(sapply(Bfs_seq_F_binom, function(Bfs) {
-  Bfs <- Bfs * prior_DMAG
-  mean(Bfs[6, ] / colSums(Bfs))
-}))
 
-# Save Consistency Evaluation Results ----
+# 3. Save Consistency Evaluation Results ----------------------------------
 
-save(seed_T_binom, seed_I_binom, seed_F_binom,
-     theta_T_binom, theta_I_binom, theta_F_binom,
-     gamma_T_binom, gamma_I_binom, gamma_F_binom,
-     beta_T_binom, beta_F_binom, alpha_I_binom, alpha_F_binom,
-     Bfs_seq_T_binom, Bfs_seq_I_binom, Bfs_seq_F_binom,
-     nobs_seq, nrep, file = 'results/consistency_binom.RData')
+save(Bayes_factors_consistency, file = 'data/Bayes_factors_consistency_reproduced.RData')
 
