@@ -1,34 +1,30 @@
-#' Bayes Factor Computation for a three-variable submodel.
+#' Bayes Factor Computation for a three-variable causal model.
 #'
-#' @param corr Input 3x3 correlation matrix
-#' @param no_samples Number of samples
+#' @param corr Numeric 3x3 correlation matrix.
+#' @param num_samples Integer number of samples.
 #'
 #' @return A vector containing the evidence of various models
 #' @export
 #'
 #' @examples
-compute_Bayes_factors <- function(corr, no_samples) {
-  stopifnot(nrow(corr) == 3)
+#' compute_Bayes_factors(diag(3), 100)
+#' 
+compute_Bayes_factors <- function(corr, num_samples) {
+  
+  if (nrow(corr) != 3 || ncol(corr) != 3) {
+    stop("Input correlation matrix has wrong dimensions, should be 3x3.")
+  }
 
-  # if (eigen(corr)$values[3] < 0) return (NA)
-
-  nu <- nrow(corr) + 1 # uniform
-  Nnu <- (no_samples + nu) / 2
+  nu <- nrow(corr) + 1 # corresponds to uniform off-diagonal correlation
+  Nnu <- (num_samples + nu) / 2
   
   det_cor <- det(corr)
 
-  # c_1(n, v)
-  c1 <- (no_samples + nu - 2) / (nu - 2)
+  # Compute c_1(n, v)
+  c1 <- (num_samples + nu - 2) / (nu - 2)
   
-  # c_2(n, v)
-  # We have to use logarithms for stability when Nnu is large
+  # Compute c_2(n, v) - We have to use logarithms for stability when Nnu is large
   c2 <- exp(lgamma(Nnu) - lgamma(Nnu - 0.5)) * gamma((nu - 1) / 2) / gamma(nu / 2)
-  # c2 <- gamma(Nnu) * gamma((nu - 1) / 2) / (gamma(Nnu - 0.5) * gamma(nu / 2))
-  
-  # Approximation to c2 is not significantly faster, but more stable
-  # c2 <- sqrt((no_samples + nu - 1.5) / (nu - 1.5))
-  # c2 <- gamma((N + nu) / 2) * gamma((nu - 1) / 2) /
-  #   (gamma((N + nu - 1) / 2) * gamma(nu / 2))
 
   f <- function(i, j) (1 - corr[i, j]^2)
 
@@ -85,38 +81,36 @@ compute_Bayes_factors <- function(corr, no_samples) {
 
 #' Vectorized compute Bayes factors of covariance structures.
 #'
-#' @param c12 vector of correlations between X_1 and X_2
-#' @param c13 vector of correlations between X_1 and X_3
-#' @param c23 vector of correlations between X_2 and X_3
-#' @param no_samples number of samples
+#' @param c12 Vector of correlations between X_1 and X_2.
+#' @param c13 Vector of correlations between X_1 and X_3.
+#' @param c23 Vector of correlations between X_2 and X_3.
+#' @param num_samples Integer number of samples.
 #'
 #' @return Bayes factors for all correlations in the vectors
 #' @export
 #'
 #' @examples
-compute_Bayes_factors_vectorized <- function(c12, c13, c23, no_samples) {
+#' cor_matrices <- apply(rWishart(100, 4, diag(3)), 3, cov2cor)
+#' compute_Bayes_factors_vectorized(
+#'   c12 = cor_matrices[2, ], 
+#'   c13 = cor_matrices[3, ], 
+#'   c23 = cor_matrices[6, ], 
+#'   num_samples = 1000
+#'  )
+compute_Bayes_factors_vectorized <- function(c12, c13, c23, num_samples) {
   
   vecl <- length(c12)
   stopifnot(vecl == length(c13))
   stopifnot(vecl == length(c23))
   
-  # if (eigen(corr)$values[3] < 0) return (NA)
-  
   nu <- 4 # uniform
-  Nnu <- (no_samples + nu) / 2
+  Nnu <- (num_samples + nu) / 2
   
   # c_1(n, v)
-  c1 <- (no_samples + nu - 2) / (nu - 2)
+  c1 <- (num_samples + nu - 2) / (nu - 2)
   
-  # c_2(n, v)
-  # We have to use logarithms for stability when Nnu is large
+  # Compute c_2(n, v) - We have to use logarithms for stability when Nnu is large
   c2 <- exp(lgamma(Nnu) - lgamma(Nnu - 0.5)) * gamma((nu - 1) / 2) / gamma(nu / 2)
-  # c2 <- gamma(Nnu) * gamma((nu - 1) / 2) / (gamma(Nnu - 0.5) * gamma(nu / 2))
-  
-  # Approximation to c2 is not significantly faster, but more stable
-  # c2 <- sqrt((no_samples + nu - 1.5) / (nu - 1.5))
-  # c2 <- gamma((N + nu) / 2) * gamma((nu - 1) / 2) /
-  #   (gamma((N + nu - 1) / 2) * gamma(nu / 2))
   
   f23 <- 1 - c23 * c23
   f13 <- 1 - c13 * c13
@@ -171,18 +165,4 @@ compute_Bayes_factors_vectorized <- function(c12, c13, c23, no_samples) {
   
   Bf
 }
-
-
-
-yeast_BFCM_prob <- function(L_i, T_i, T_j, prior_structure = NULL) {
-  data(yeast)
-  
-  if (is.null(prior_structure)) {
-    prior_structure <- uniform_prior_GRN_triplet()
-  }
-  
-  Bf <- compute_Bayes_factors(cor(cbind(L_i, T_i, T_j)), 112) * prior_structure
-  Bf / sum(Bf)
-}
-
 
