@@ -5,7 +5,8 @@ Authors@R:
     person(given = "Ioan Gabriel",
            family = "Bucur",
            role = c("aut", "cre"),
-           email = "g.bucur@cs.ru.nl")
+           email = "ioan.gabriel.bucur@gmail.com",
+           comment = c(ORCID = "0000-0002-7852-052X"))
 Description: This is an implementation of the BFCS algorithm, which is described
   in the article "A Bayesian Approach for Inferring Local Causal Structure in 
   Gene Regulatory Networks", published in Proceedings of Machine Learning 
@@ -21,13 +22,17 @@ Imports: Rcpp,
     Rdpack,
     corpcor,
     qtl,
-    qvalue,
-    sva,
     bnlearn,
     BiDAG,
-    pcalg
+    pcalg,
+    trigger
 RdMacros: Rdpack
-Remotes: igbucur/trigger
+Remotes: igbucur/trigger,
+    bioc::release/graph,
+    bioc::release/RBGL,
+    bioc::release/Rgraphviz,
+    bioc::release/sva,
+    bioc::release/qvalue
 Suggests: 
     knitr,
     kableExtra,
