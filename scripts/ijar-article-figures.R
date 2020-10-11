@@ -272,7 +272,7 @@ time_network_size_plot <- time_versus_network_size %>%
   dplyr::filter(row_number() <= 30) %>%
   tidyr::pivot_longer(cols = BFCS.elapsed:trigger.elapsed) %>%
   ggplot2::ggplot() +
-  geom_line(aes(x = size, y = value, col = name), size = 1) + IJAR_theme + 
+  geom_line(aes(x = num_var, y = value, col = name), size = 1) + IJAR_theme + 
   guides(col = guide_legend(title = "Method", labels = c("BFCS", "BGe", "trigger"))) +
   ylab("Time in seconds") +
   xlab("Network size (nodes)") +
@@ -286,7 +286,7 @@ ggsave(paste0(figures_dir, 'IJAR_Figure_8.pdf'), time_network_size_plot)
 time_sample_size_plot <- time_versus_sample_size %>%
   tidyr::pivot_longer(cols = BFCS.elapsed:trigger.elapsed) %>%
   ggplot2::ggplot() +
-  geom_line(aes(x = nobs, y = value, col = name), size = 1) + IJAR_theme + 
+  geom_line(aes(x = num_obs, y = value, col = name), size = 1) + IJAR_theme + 
   guides(col = guide_legend(title = "Method", labels = c("BFCS", "BGe", "trigger"))) +
   ylab("Time in seconds") +
   xlab("Number of observations") +

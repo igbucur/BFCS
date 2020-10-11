@@ -325,7 +325,7 @@ yeast_GRN <- list(
 )
 
 yeast_BFCS_DMAG <- compute_BFCS_probabilities(yeast_GRN)
-yeast_trigger_w50k <- get_trigger_probabilities(yeast_GRN)
+yeast_trigger_w50k <- compute_trigger_probabilities(yeast_GRN)
 
 # 5. Computational and Time Complexity - Figure 8 and 9 IJAR ---------------
 
