@@ -34,8 +34,7 @@ prior_DMAG <- uniform_prior_GRN_DMAG()
 # Number of replications in each simulation
 num_reps <- 1000
 # Number of observations sequence increases logarithmically for each set of simulations
-num_obs_seq <- c(100, 300, 1000, 3000)
-# num_obs_seq <- c(100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000)
+num_obs_seq <- c(100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000)
 
 # Prior on causal structures (DMAG)
 prior_DMAG <- uniform_prior_GRN_DMAG()
@@ -63,7 +62,7 @@ set.seed(seed_gaussian_causal)
 gamma_gaussian_causal <- rnorm(num_reps)
 beta_gaussian_causal <- rnorm(num_reps)
 
-Bayes_factors_consistency_reproduction$gaussian$causal <- lapply(num_obs_seq, function(num_obs) {
+Bayes_factors_consistency_reproduction$gaussian$causal <- sapply(num_obs_seq, function(num_obs) {
   print(paste("Number of observations:", num_obs))
   corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
     L <- rnorm(num_obs)
@@ -77,7 +76,7 @@ Bayes_factors_consistency_reproduction$gaussian$causal <- lapply(num_obs_seq, fu
   Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
-})
+}, simplify = FALSE)
 
 # Figure 3b - Independent Model
 
@@ -87,7 +86,7 @@ set.seed(seed_gaussian_independent)
 gamma_gaussian_independent <- rnorm(num_reps)
 alpha_gaussian_independent <- rnorm(num_reps)
 
-Bayes_factors_consistency_reproduction$gaussian$independent <- lapply(num_obs_seq, function(num_obs) {
+Bayes_factors_consistency_reproduction$gaussian$independent <- sapply(num_obs_seq, function(num_obs) {
   print(paste("Number of observations:", num_obs))
   
   corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
@@ -102,7 +101,7 @@ Bayes_factors_consistency_reproduction$gaussian$independent <- lapply(num_obs_se
   Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
-})
+}, simplify = FALSE)
 
 # Figure 3c - Full Model
 
@@ -113,7 +112,7 @@ gamma_gaussian_full <- rnorm(num_reps)
 alpha_gaussian_full <- rnorm(num_reps)
 beta_gaussian_full <- rnorm(num_reps)
 
-Bayes_factors_consistency_reproduction$gaussian$full <- lapply(num_obs_seq, function(num_obs) {
+Bayes_factors_consistency_reproduction$gaussian$full <- sapply(num_obs_seq, function(num_obs) {
   print(paste("Number of observations:", num_obs))
   
   corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
@@ -129,7 +128,7 @@ Bayes_factors_consistency_reproduction$gaussian$full <- lapply(num_obs_seq, func
   Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
-})
+}, simplify = FALSE)
 
 
 # d-f) X_1 is Bernoulli, (X_2, X_3) | X_1 is Gaussian ---------------------
@@ -143,7 +142,7 @@ theta_binomial_causal <- runif(num_reps, 0.1, 0.5)
 gamma_binomial_causal <- rnorm(num_reps)
 beta_binomial_causal <- rnorm(num_reps)
 
-Bayes_factors_consistency_reproduction$binomial$causal <- lapply(num_obs_seq, function(num_obs) {
+Bayes_factors_consistency_reproduction$binomial$causal <- sapply(num_obs_seq, function(num_obs) {
   print(paste("Number of observations:", num_obs))
   
   corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
@@ -159,7 +158,7 @@ Bayes_factors_consistency_reproduction$binomial$causal <- lapply(num_obs_seq, fu
   Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
-})
+}, simplify = FALSE)
 
 ## Figure 3e - Independent Model
 
@@ -170,7 +169,7 @@ theta_binomial_independent <- runif(num_reps, 0.1, 0.5)
 gamma_binomial_independent <- rnorm(num_reps)
 alpha_binomial_independent <- rnorm(num_reps)
 
-Bayes_factors_consistency_reproduction$binomial$independent <- lapply(num_obs_seq, function(num_obs) {
+Bayes_factors_consistency_reproduction$binomial$independent <- sapply(num_obs_seq, function(num_obs) {
   print(paste("Number of observations:", num_obs))
   
   corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
@@ -186,7 +185,7 @@ Bayes_factors_consistency_reproduction$binomial$independent <- lapply(num_obs_se
   Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
-})
+}, simplify = FALSE)
 
 ## Figure 3f - Full Model
 
@@ -198,7 +197,7 @@ gamma_binomial_full <- rnorm(num_reps)
 alpha_binomial_full <- rnorm(num_reps)
 beta_binomial_full <- rnorm(num_reps)
 
-Bayes_factors_consistency_reproduction$binomial$full <- lapply(num_obs_seq, function(num_obs) {
+Bayes_factors_consistency_reproduction$binomial$full <- sapply(num_obs_seq, function(num_obs) {
   print(paste("Number of observations:", num_obs))
   
   corr_mats <- do.call('cbind', pbmclapply(1:num_reps, function(i) {
@@ -214,7 +213,7 @@ Bayes_factors_consistency_reproduction$binomial$full <- lapply(num_obs_seq, func
   Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
-})
+}, simplify = FALSE)
 
 ## Save consistency evaluation results
 

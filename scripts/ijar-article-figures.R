@@ -9,36 +9,22 @@ library(DescTools) # for computing the Brier score
 library(ggpubr) # needed for plot layout (ggarrange)
 library(reshape2) # needed for reshaping data frames
 
-off_diagonal <- function(m) m[lower.tri(m) | upper.tri(m)]
-
 source('R/compute_prior_structures.R')
+source('R/utils.R')
 
 figures_dir <- "figures/"
 if (!dir.exists(figures_dir)) dir.create(figures_dir)
 
 prior_DAG <- uniform_prior_GRN_DAG()
 prior_DMAG <- uniform_prior_GRN_DMAG()
-# prior_ADMG <- uniform_prior_GRN_ADMG()
-
-# For use when making ggplots
-IJAR_theme <- theme_classic() + theme(
-  text = element_text(size = 15), 
-  legend.text = element_text(size = 15), 
-  legend.position = "bottom",
-  legend.key.size = unit(1.5, "lines"), 
-  legend.key.width = unit(1.5, "lines"),
-  aspect.ratio = 1, plot.margin = unit(c(0, 0, 0, 0), "lines"))
-
 
 
 # 4.1. Consistency of Detecting Local Causal Structures - Figure 3 --------
 
 #' Produce plot that shows the consistency of BFCS using simulation experiments.
 #'
-#' @param bayes_factors List of computed Bayes factors for various number of samples
-#' @param priors List of priors to combine with Bayes factors for deriving posterior
-#' over causal structures
-#' @param str_name 
+#' @param Bayes_factors List of computed Bayes factors for various number of samples
+#' @param prior Prior for causal structures over triplets.
 #'
 #' @return ggplot showing consistency of BFCS in finding the correct causal model
 #' 
@@ -50,10 +36,9 @@ plot_consistency_data <- function(Bayes_factors, prior = prior_DMAG) {
     Bfs[6, ] / colSums(Bfs)
   }) %>%
     reshape2::melt() %>%
-    dplyr::rename(rep = Var1, nobs = Var2) %>%
-    dplyr::mutate(nobs = nobs_seq[nobs])
+    dplyr::rename(num_rep = Var1, num_obs = Var2)
   
-  ggplot(posterior_probabilities, aes(x = log10(nobs), y = value, group = log10(nobs))) +
+  ggplot(posterior_probabilities, aes(x = log10(num_obs), y = value, group = log10(num_obs))) +
     geom_boxplot(outlier.alpha = 0.1, color = 'darkblue', fill = 'lightblue') + ylim(c(0, 1)) +
     xlab("Number of samples on the base-10 logarithmic scale") +
     ylab("Probability of causal model") + IJAR_theme
@@ -76,22 +61,6 @@ ggsave(paste0(figures_dir, "IJAR_Figure_3.pdf"),
 
 
 # 4.2. Causal Discovery in Gene Regulatory Networks - Figures 4-7 ---------
-
-
-# off_diagonal <- function(m) m[lower.tri(m) | upper.tri(m)]
-# 
-# suffix <- '_all'
-# sG_structure <- as.matrix(read.table(paste0('inst/extdata/sG_structure_runif', suffix, '.txt')))
-# lG_structure <- as.matrix(read.table(paste0('inst/extdata/lG_structure_runif', suffix, '.txt')))
-# dG_structure <- as.matrix(read.table(paste0('inst/extdata/dG_structure_runif', suffix, '.txt')))
-# sG_ancestral <- as.matrix(Matrix::expm(sG_structure) > 0) * 1
-# lG_ancestral <- as.matrix(Matrix::expm(lG_structure) > 0) * 1
-# dG_ancestral <- as.matrix(Matrix::expm(dG_structure) > 0) * 1
-# 
-# methods <- data.frame(
-#   name = c('trigger', rep('BFCS', 2), 'BFCS_loc', 'BGe'),
-#   type = c('avg', 'DAG', 'DMAG', 'DMAG', 'DMAG')
-# )
 
 run_comparison <- function(simulated_GRN_probabilities, graph_structure_type, simulations = c("samples_1e2", "samples_1e3")) {
   
@@ -147,25 +116,22 @@ run_comparison <- function(simulated_GRN_probabilities, graph_structure_type, si
     stop("Wrong graph structure type specified. Possible options are 'direct' and 'ancestral'.")
   }
   
-  method_names <- names(simulation_probabilities)
-  sanitized_method_names <- gsub(" ", "_", method_names)
-  my_colors <- ggthemes::colorblind_pal()(length(method_names))
+
   
   simulated_GRN_plots <- vector("list", length = 3 * length(simulations))
   
   for (i in 1:length(simulations)) {
+    
     simulation_probabilities <- simulated_GRN_probabilities[[simulations[i]]]
     
-    
-
+    method_names <- names(simulation_probabilities)
+    sanitized_method_names <- gsub(" ", "_", method_names)
+    my_colors <- ggthemes::colorblind_pal()(length(method_names))
     
     probabilities_off_diagonal <- lapply(simulation_probabilities, off_diagonal)
     structure_off_diagonal <- off_diagonal(graph_structure)
     
     # Create PRROC curves
-    
-    
-    
     mdat <- precrec::mmdata(probabilities_off_diagonal, structure_off_diagonal, 
                             modnames = sanitized_method_names)
     curves <- precrec::evalmod(mdat)
@@ -194,24 +160,24 @@ run_comparison <- function(simulated_GRN_probabilities, graph_structure_type, si
   )
 }
 
-load('data/simulated_GRN_probabilities.RData')
+load('data/simulated_GRN_probabilities_IJAR.RData')
 
 
 # Figure 4 : Sparser graph, direct relationships
 ggsave(paste0(figures_dir, "IJAR_Figure_4.pdf"), 
-       run_comparison(simulated_GRN_probabilities$sparse_graph, "direct"),
+       run_comparison(simulated_GRN_probabilities_IJAR$sparse_graph, "direct"),
        onefile = FALSE, width = 10, height = 15)
 # Figure 4 : Denser graph, direct relationships
 ggsave(paste0(figures_dir, "IJAR_Figure_5.pdf"), 
-       run_comparison(simulated_GRN_probabilities$less_dense_graph, "direct"),
+       run_comparison(simulated_GRN_probabilities_IJAR$less_dense_graph, "direct"),
        onefile = FALSE, width = 10, height = 15)
 # Figure 4 : Sparser graph, ancestral relationships
 ggsave(paste0(figures_dir, "IJAR_Figure_6.pdf"), 
-       run_comparison(simulated_GRN_probabilities$sparse_graph, "ancestral"),
+       run_comparison(simulated_GRN_probabilities_IJAR$sparse_graph, "ancestral"),
        onefile = FALSE, width = 10, height = 15)
 # Figure 4 : Denser graph, ancestral relationships
 ggsave(paste0(figures_dir, "IJAR_Figure_7.pdf"), 
-       run_comparison(simulated_GRN_probabilities$less_dense_graph, "ancestral"),
+       run_comparison(simulated_GRN_probabilities_IJAR$less_dense_graph, "ancestral"),
        onefile = FALSE, width = 10, height = 15)
 
 
@@ -260,9 +226,6 @@ knitr::kable(compare_NAM9_regulated_sort_BFCS[1:10, ], format = "latex", digits 
              booktabs = TRUE, row.names = FALSE, align = "l") %>%
   kableExtra::kable_styling() %>%
   kableExtra::save_kable(paste0(figures_dir, "IJAR_Table_2b.pdf"))
-
-
-
 
 # 5. Computational and Time Complexity - Figure 8 and 9 -------------------
 

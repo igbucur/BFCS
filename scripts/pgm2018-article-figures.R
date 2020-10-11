@@ -8,13 +8,8 @@ library(precrec) # needed for computing the ROC / PRC values
 library(DescTools) # for computing the Brier score
 library(ggpubr) # needed for plot layout (ggarrange)
 
-off_diagonal <- function(m) m[lower.tri(m) | upper.tri(m)]
-# TPR <- function(prob, g) sum(prob * g) / sum(g)
-# FPR <- function(prob, g) sum(prob * (1 - g)) / sum(1 - g)
-# sG_structure <- as.matrix(read.table('inst/extdata/sG_structure.txt'))
-# dG_structure <- as.matrix(read.table('inst/extdata/dG_structure.txt'))
-
 source('R/compute_prior_structures.R')
+source('R/utils.R')
 
 # Create folder where to put article figures
 figures_dir <- "figures/"
@@ -22,18 +17,14 @@ if (!dir.exists(figures_dir)) dir.create(figures_dir)
 
 prior_DAG <- uniform_prior_GRN_DAG()
 prior_DMAG <- uniform_prior_GRN_DMAG()
-# prior_ADMG <- uniform_prior_GRN_ADMG()
-
 
 
 # 4.1 Consistency of Detecting Local Causal Structures - Figure 3 ---------
 
 #' Produce plot that shows the consistency of BFCS using simulation experiments.
 #'
-#' @param bayes_factors List of computed Bayes factors for various number of samples
-#' @param priors List of priors to combine with Bayes factors for deriving posterior
-#' over causal structures
-#' @param str_name 
+#' @param Bayes_factors List of computed Bayes factors for various number of samples
+#' @param prior Prior for causal structures over triplets.
 #'
 #' @return ggplot showing consistency of BFCS in finding the correct causal model
 #' 
@@ -45,10 +36,9 @@ plot_consistency_data <- function(Bayes_factors, prior = prior_DMAG) {
     Bfs[6, ] / colSums(Bfs)
   }) %>%
     reshape2::melt() %>%
-    dplyr::rename(rep = Var1, nobs = Var2) %>%
-    dplyr::mutate(nobs = nobs_seq[nobs])
+    dplyr::rename(num_rep = Var1, num_obs = Var2)
   
-  ggplot(posterior_probabilities, aes(x = log10(nobs), y = value, group = log10(nobs))) +
+  ggplot(posterior_probabilities, aes(x = log10(num_obs), y = value, group = log10(num_obs))) +
     geom_boxplot(outlier.alpha = 0.1, color = 'darkblue', fill = 'lightblue') + ylim(c(0, 1)) +
     xlab("Number of samples on the base-10 logarithmic scale") +
     ylab("Probability of causal model") + IJAR_theme
@@ -131,6 +121,8 @@ compare_algorithms_PGM <- function(
   }, simplify = FALSE) 
   
 }
+
+load('data/simulated_GRN_probabilities_PGM.RData')
 
 # Compare algorithms for both the sparse and dense graph
 sparse_graph_PGM_results <- compare_algorithms_PGM(simulated_GRN_probabilities_PGM$sparse_graph)
