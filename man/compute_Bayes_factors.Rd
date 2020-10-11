@@ -2,18 +2,22 @@
 % Please edit documentation in R/compute_Bayes_factors.R
 \name{compute_Bayes_factors}
 \alias{compute_Bayes_factors}
-\title{Bayes Factor Computation for a three-variable submodel.}
+\title{Bayes Factor Computation for a three-variable causal model.}
 \usage{
-compute_Bayes_factors(corr, no_samples)
+compute_Bayes_factors(corr, num_samples)
 }
 \arguments{
-\item{corr}{Input 3x3 correlation matrix}
+\item{corr}{Numeric 3x3 correlation matrix.}
 
-\item{no_samples}{Number of samples}
+\item{num_samples}{Integer number of samples.}
 }
 \value{
 A vector containing the evidence of various models
 }
 \description{
-Bayes Factor Computation for a three-variable submodel.
+Bayes Factor Computation for a three-variable causal model.
+}
+\examples{
+compute_Bayes_factors(diag(3), 100)
+
 }

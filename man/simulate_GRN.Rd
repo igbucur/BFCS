@@ -4,7 +4,15 @@
 \alias{simulate_GRN}
 \title{Generate gene regulatory network (GRN) data from structural equation model.}
 \usage{
-simulate_GRN(ngen, nexp, nobs, prob_edge, seed = NULL)
+simulate_GRN(
+  ngen,
+  nexp,
+  nobs,
+  prob_edge,
+  seed = NULL,
+  lwr_edge_weight = -1,
+  upr_edge_weight = 1
+)
 }
 \arguments{
 \item{ngen}{Integer number of genetic markers.}
@@ -17,6 +25,10 @@ simulate_GRN(ngen, nexp, nobs, prob_edge, seed = NULL)
 between two expression traits. Passed on to \link[pcalg]{randomDAG}.}
 
 \item{seed}{Integer seed for reproducible random number generation.}
+
+\item{lwr_edge_weight}{Lower limit of edge weight (causal strength T_i -> T_j)}
+
+\item{upr_edge_weight}{Upper limit of edge weight (causal strength T_i -> T_j)}
 }
 \value{
 A data set consisting of \emph{nobs} samples from a random generated 

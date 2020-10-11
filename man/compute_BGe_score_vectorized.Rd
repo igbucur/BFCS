@@ -5,13 +5,13 @@
 \title{Vectorized compute Bayes factors of covariance structures using the Bayesian
 Gaussian equivalent (BGe) score.}
 \usage{
-compute_BGe_score_vectorized(suffstat_list, no_samples, graph_list)
+compute_BGe_score_vectorized(suffstat_list, num_samples, graph_list)
 }
 \arguments{
 \item{suffstat_list}{List of sufficient statistics for a data set, containing
 the means of the variables and their covariance matrix.}
 
-\item{no_samples}{number of samples}
+\item{num_samples}{number of samples}
 
 \item{graph_list}{List containing objects of class "bn", each of which
 represents a graph structure for which we compute the BGe score.}
@@ -25,7 +25,6 @@ Vectorized compute Bayes factors of covariance structures using the Bayesian
 Gaussian equivalent (BGe) score.
 }
 \examples{
-# 1. Some idealized examples
 mec_list <- get_Markov_equivalence_class_list(format = "bnlearn")
 suffstat_list = list(
   # three independent variables, zero mean
@@ -44,23 +43,5 @@ suffstat_list = list(
     covmat = matrix(1, 3, 3)
   )
 )
-compute_BGe_score_vectorized(suffstat_list, no_samples = 10000, mec_list)
-
-# 2. Example on yeast data set
-library(trigger)
-data(yeast)
-
-L <- yeast$marker
-Trait <- yeast$exp
-yeast_data <- t(rbind(yeast$marker, yeast$exp))
-means.LT <- colMeans(yeast_data)
-cov.LT <- cov(yeast_data)
-
-# select triples 
-my_grid <- subset(expand.grid(L_k = 1:10, T_i = 11:20, T_j = 11:20), T_i != T_j)
-
-suffstat_list <- apply(my_grid, 1, function(row) {
-  list(means = means.LT[row], covmat = cov.LT[row, row])
-})
-
+compute_BGe_score_vectorized(suffstat_list, num_samples = 10000, mec_list)
 }

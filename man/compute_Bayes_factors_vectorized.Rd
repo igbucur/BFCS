@@ -4,20 +4,29 @@
 \alias{compute_Bayes_factors_vectorized}
 \title{Vectorized compute Bayes factors of covariance structures.}
 \usage{
-compute_Bayes_factors_vectorized(c12, c13, c23, no_samples)
+compute_Bayes_factors_vectorized(c12, c13, c23, num_samples)
 }
 \arguments{
-\item{c12}{vector of correlations between X_1 and X_2}
+\item{c12}{Vector of correlations between X_1 and X_2.}
 
-\item{c13}{vector of correlations between X_1 and X_3}
+\item{c13}{Vector of correlations between X_1 and X_3.}
 
-\item{c23}{vector of correlations between X_2 and X_3}
+\item{c23}{Vector of correlations between X_2 and X_3.}
 
-\item{no_samples}{number of samples}
+\item{num_samples}{Integer number of samples.}
 }
 \value{
 Bayes factors for all correlations in the vectors
 }
 \description{
 Vectorized compute Bayes factors of covariance structures.
+}
+\examples{
+cor_matrices <- apply(rWishart(100, 4, diag(3)), 3, cov2cor)
+compute_Bayes_factors_vectorized(
+  c12 = cor_matrices[2, ], 
+  c13 = cor_matrices[3, ], 
+  c23 = cor_matrices[6, ], 
+  num_samples = 1000
+ )
 }

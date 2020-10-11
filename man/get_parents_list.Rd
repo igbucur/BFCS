@@ -7,7 +7,7 @@
 get_parents_list(bn_graph)
 }
 \arguments{
-\item{bn_graph}{}
+\item{bn_graph}{object of class "bn" representing a bnlearn graph}
 }
 \value{
 List of parents for each node, where the nodes are indexed from zero.
