@@ -70,57 +70,47 @@ ggsave(paste0(figures_dir, "PGM_Figure_3.pdf"),
        width = 16, height = 9)
 
 
-# 4.2 Causal Discovery in Gene Regulatory Networks - Figure 4 -------------
+# 4.2 Causal Discovery in Gene Regulatory Networks - Figure 4 and Table 2 ----
 
-#' Plot precision-recall or ROC curve to compare various algorithms.
+#' Compare different algorithms by plotting precision-recall and ROC curve
+#' and by computing Brier scores.
 #'
-#' @param df Data frame in long table format containing posterior probabilities 
-#' of algorithms under comparison.
-#' @param type String specifying type of plot we want to produce (PRC or ROC)
+#' @param simulated_GRN_probabilities List containing the structure of a simulated
+#' GRN and the posterior probabilities obtained for all simulations.
+#' @param simulations Vector specifying different simulations for each algorithm
+#' given the data structure (here the sample size is different).
 #'
-#' @return
+#' @return List containing ROC, PRC, and Brier scores for each simulation.
 #'
 #' @keywords internal
-plot_PRROC_curves <- function(
-  datafile_root = 'inst/extdata/', simulations = c("sG_1e2", "sG_1e3", "dG_1e2", "dG_1e3"),
-  algorithms = c(paste0("trigger_", 1:3), "BFCS_DAG", "BFCS_DMAG", "BGe_scaled")
+compare_algorithms_PGM <- function(
+  simulated_GRN_probabilities, simulations = c("samples_1e2", "samples_1e3")
   ) {
   
-  library(ggplot2)
-  library(precrec)
-  library(dplyr)
+  graph_structure <- simulated_GRN_probabilities$structure
   
-  # if (!(simulation %in% c('sG_1e2', 'dG_1e2', 'sG_1e3', 'dG_1e3'))) {
-  #   stop("Invalid simulation")
-  # }
-  
-  off_diagonal <- function(m) m[lower.tri(m) | upper.tri(m)]
+  # Plotting parameters
   my_colors <- ggthemes::colorblind_pal()(8)[c(1:3, 6:7, 4)]
-  
   my_labels <- list(
     "ROC" = list(x = "1 - Specificity", y = "Sensitivity"),
     "PRC" = list(x = "Recall", y = "Precision")
   )
   
+  # NOTE: sapply as opposed to lapply automatically sets the names of the list using the first argument
   sapply(simulations, function(simulation) {
-    posterior_probabilities_list <- lapply(
-      algorithms,
-      function(algorithm) {
-        filename <- paste0(datafile_root, 'PGM_prob_', simulation, '_', algorithm, '.txt')
-        off_diagonal(as.matrix(read.table(filename)))
-      }
-    )
     
-    graph_structure <- as.matrix(read.table(paste0(datafile_root, substr(simulation, 1, 2), '_structure.txt')))
+    # extract posterior probabilities list for the current simulation and remove diagonal
+    posterior_probabilities_list <- lapply(simulated_GRN_probabilities[[simulation]], off_diagonal)
     
+    # Evaluate PRC and ROC measures given scores and labels (graph structure)
     mdat <- precrec::mmdata(
       posterior_probabilities_list, off_diagonal(graph_structure),
-      modnames = algorithms
+      modnames = names(simulated_GRN_probabilities[[simulation]])
     )
     dat <- as.data.frame(evalmod(mdat))
     
-    
-    sapply(c("ROC", "PRC"), function(type) {
+    # Plot ROC and PRC curves using precrec::mmdata structure
+    result <- sapply(c("ROC", "PRC"), function(type) {
       
       ggplot(dat %>% filter(type ==  !!type), aes(x = x, y = y)) +
         geom_line(aes(color = modname, linetype = modname), size = 0.85) +
@@ -130,71 +120,54 @@ plot_PRROC_curves <- function(
         theme_bw() + theme(legend.text = element_text(size = 14)) +
         guides(color = guide_legend(nrow = 1, keywidth = 2.5, keyheight = 1))
     }, simplify = FALSE)
+    
+    # Compute Brier scores
+    result$Brier_scores <- sapply(posterior_probabilities_list, function(probs) {
+      DescTools::BrierScore(off_diagonal(graph_structure), probs)
+    })
+    
+    result
+    
   }, simplify = FALSE) 
+  
 }
 
-curves <- plot_PRROC_curves()
-combined_plot <- ggpubr::ggarrange(
-  curves$sG_1e2$ROC, curves$sG_1e2$PRC,
-  curves$dG_1e2$ROC, curves$dG_1e2$PRC,
-  curves$sG_1e3$ROC, curves$sG_1e3$PRC,
-  curves$dG_1e3$ROC, curves$dG_1e3$PRC,
+# Compare algorithms for both the sparse and dense graph
+sparse_graph_PGM_results <- compare_algorithms_PGM(simulated_GRN_probabilities_PGM$sparse_graph)
+dense_graph_PGM_results <- compare_algorithms_PGM(simulated_GRN_probabilities_PGM$dense_graph)
+
+# Combine PRROC plots with ggarrange, and save them
+PGM_PRROC_plot <- ggpubr::ggarrange(
+  sparse_graph_PGM_results$samples_1e2$ROC, sparse_graph_PGM_results$samples_1e2$PRC,
+  dense_graph_PGM_results$samples_1e2$ROC, dense_graph_PGM_results$samples_1e2$PRC,
+  sparse_graph_PGM_results$samples_1e3$ROC, sparse_graph_PGM_results$samples_1e3$PRC,
+  dense_graph_PGM_results$samples_1e3$ROC, dense_graph_PGM_results$samples_1e3$PRC,
   nrow = 2, ncol = 4,
   common.legend = TRUE, legend = "bottom"
 )
+ggsave(paste0(figures_dir, "PGM_Figure_4.pdf"), PGM_PRROC_plot, onefile = FALSE)
 
-ggsave(paste0(figures_dir, "PGM_Figure_4.pdf"), onefile = FALSE)
-
-
-
-# 4.2 Causal Discovery in Gene Regulatory Networks - Table 2 --------------
-
-#' Compute the Brier calibration score to compare the algorithms.
-#'
-#' @param datafile_root string; root directory for data files
-#' @param simulations character vector; simulation acronyms
-#' @param algorithms character vector; algorithm acronyms
-#' 
-#' @return
-compute_Brier_scores <- function(
-  datafile_root = 'inst/extdata/', simulations = c("sG_1e2", "sG_1e3", "dG_1e2", "dG_1e3"),
-  algorithms = c(paste0("trigger_", 1:3), "BFCS_DAG", "BFCS_DMAG", "BGe_scaled")
-) {
-  
-  t(sapply(simulations, function(simulation) {
-    
-    graph_structure <- as.matrix(read.table(paste0(datafile_root, substr(simulation, 1, 2), '_structure.txt')))
-    
-
-    Brier_scores <- sapply(
-      algorithms,
-      function(algorithm) {
-        filename <- paste0(datafile_root, 'PGM_prob_', simulation, '_', algorithm, '.txt')
-        DescTools::BrierScore(off_diagonal(graph_structure), off_diagonal(as.matrix(read.table(filename))))
-      }
-    )
-  
-  }))
-}
-
-Brier_scores <- tibble::as_tibble(compute_Brier_scores(), rownames = "simulation") %>%
+# Collect Brier scores and organize them in a tibble
+PGM_Brier_scores_sparse_graph <- 
+  tibble::as_tibble(t(sapply(sparse_graph_PGM_results, '[[', 'Brier_scores')), rownames = "samples") %>% mutate(graph = "Sparse")
+PGM_Brier_scores_dense_graph <- 
+  tibble::as_tibble(t(sapply(dense_graph_PGM_results, '[[', 'Brier_scores')), rownames = "samples") %>% mutate(graph = "Dense")
+PGM_Brier_scores <- PGM_Brier_scores_sparse_graph %>%
+  dplyr::bind_rows(PGM_Brier_scores_dense_graph) %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(trigger = mean(c(trigger_1, trigger_2, trigger_3))) %>%
-  dplyr::select(simulation, trigger, BFCS_DAG, BFCS_DMAG, BGe_scaled) %>%
-  dplyr::rename(BGe = BGe_scaled) %>%
-  dplyr::mutate(Samples = as.integer(substr(simulation, 4, 6))) %>%
-  dplyr::mutate(Graph = ifelse(substr(simulation, 1, 1) == "s", "Sparse", "Dense")) %>%
-  dplyr::select(-simulation) %>%
-  tidyr::pivot_wider(names_from = Graph, values_from = trigger:BGe) %>%
+  dplyr::mutate(trigger = mean(c(`trigger 1`, `trigger 2`, `trigger 3`))) %>%
+  dplyr::select(samples, graph, trigger, `BFCS DAG`, `BFCS DMAG`, BGe) %>%
+  dplyr::mutate(samples = as.integer(substr(samples, 9, 11)))  %>%
+  tidyr::pivot_wider(names_from = graph, values_from = trigger:BGe) %>%
   dplyr::relocate(ends_with("Sparse"), .before = trigger_Dense) 
 
-table_cols <- gsub("_", " ", gsub("_Sparse|_Dense", "", names(Brier_scores)))
-
+# Output LaTeX table from the Brier scores stored in tibble
 # Table format is different from paper but content is identical
-knitr::kable(Brier_scores, format = "latex", digits = 3, booktabs = T, col.names = table_cols, align = "c") %>%
+knitr::kable(PGM_Brier_scores, format = "latex", digits = 3, booktabs = T, 
+             col.names = gsub("_Sparse|_Dense", "", names(PGM_Brier_scores)), align = "c") %>%
   kableExtra::kable_styling() %>%
   kableExtra::add_header_above(c(" " = 1, "Sparse GRN" = 4, "Dense GRN" = 4)) %>% 
-  kableExtra::column_spec(c(1, 5), latex_column_spec = c("c||", "c|")) %>%
+  kableExtra::column_spec(c(1, 5), latex_column_spec = "c|") %>%
   kableExtra::save_kable(paste0(figures_dir, "PGM_Table_2.pdf"))
 
 
