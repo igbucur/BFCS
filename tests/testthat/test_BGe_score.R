@@ -17,16 +17,8 @@ test_that("The BGe score computed by compute_BGe_score is the same as the one
   })
   
   log_evidence_BiDAG <- sapply(mec_amat, function(mec) {
-    BiDAG::DAGscore(3, BiDAG::scoreparameters(3, "bge", data_triple), mec)
+    BiDAG::DAGscore(BiDAG::scoreparameters(3, "bge", data_triple), mec)
   })
   
   expect_equal(log_evidence, log_evidence_BiDAG)
-})
-
-test_that("The probabilities derived with compute_BGe_score_vectorized are
-          the same as the ones we would get using BiDAG", {
-
-  GRN <- simulate_GRN(5, 5, 100, 0.1)
-  
-  expect_equal(  get_BGe_probabilities_fast(GRN), get_BiDAG_probabilities(GRN))
 })

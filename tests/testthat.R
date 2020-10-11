@@ -1,4 +1,4 @@
 library(testthat)
-library(bfcs)
+library(BFCS)
 
-test_check("bfcs")
+test_check("BFCS")
