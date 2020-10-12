@@ -10,9 +10,9 @@
 #' @export
 #'
 #' @examples
-#' compute_Bayes_factors(diag(3), 100)
+#' compute_BFCS(diag(3), 100)
 #' 
-compute_Bayes_factors <- function(corr, num_samples) {
+compute_BFCS <- function(corr, num_samples) {
   
   if (nrow(corr) != 3 || ncol(corr) != 3) {
     stop("Input correlation matrix has wrong dimensions, should be 3x3.")
@@ -95,13 +95,13 @@ compute_Bayes_factors <- function(corr, num_samples) {
 #'
 #' @examples
 #' cor_matrices <- apply(rWishart(100, 4, diag(3)), 3, cov2cor)
-#' compute_Bayes_factors_vectorized(
+#' compute_BFCS_vectorized(
 #'   c12 = cor_matrices[2, ], 
 #'   c13 = cor_matrices[3, ], 
 #'   c23 = cor_matrices[6, ], 
 #'   num_samples = 1000
 #'  )
-compute_Bayes_factors_vectorized <- function(c12, c13, c23, num_samples) {
+compute_BFCS_vectorized <- function(c12, c13, c23, num_samples) {
   
   vecl <- length(c12)
   stopifnot(vecl == length(c13))
