@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_parents_list}
 \alias{get_parents_list}
-\title{Small internal utility functions}
+\title{Derive parents list from bnlearn graph for use in compute_BGe_score.}
 \usage{
 get_parents_list(bn_graph)
 }
@@ -13,10 +13,5 @@ get_parents_list(bn_graph)
 List of parents for each node, where the nodes are indexed from zero.
 }
 \description{
-Small internal utility functions
-}
-\author{
-Ioan Gabriel Bucur
-
 Derive parents list from bnlearn graph for use in compute_BGe_score.
 }

@@ -1,13 +1,3 @@
-#' Small internal utility functions and global variables
-#' @author Ioan Gabriel Bucur
-IJAR_theme <- theme_classic() + theme(
-  text = element_text(size = 15), 
-  legend.text = element_text(size = 15), 
-  legend.position = "bottom",
-  legend.key.size = unit(1.5, "lines"), 
-  legend.key.width = unit(1.5, "lines"),
-  aspect.ratio = 1, plot.margin = unit(c(0, 0, 0, 0), "lines"))
-
 #' Derive parents list from bnlearn graph for use in compute_BGe_score.
 #'  
 #' @param bn_graph object of class "bn" representing a bnlearn graph
