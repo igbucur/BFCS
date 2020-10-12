@@ -1,9 +1,12 @@
-#' Bayes Factor Computation for a three-variable causal model.
+#' Function for computing the Bayes Factors of Covariance Structures for a 
+#' three-variable causal model.
 #'
 #' @param corr Numeric 3x3 correlation matrix.
 #' @param num_samples Integer number of samples.
 #'
-#' @return A vector containing the evidence of various models
+#' @return A vector containing the Bayes factor of all the eleven possible
+#' conditional independence models on three variables relative to the fully
+#' connected model.
 #' @export
 #'
 #' @examples
@@ -79,14 +82,15 @@ compute_Bayes_factors <- function(corr, num_samples) {
 }
 
 
-#' Vectorized compute Bayes factors of covariance structures.
+#' Vectorized function for efficiently computing the Bayes Factors of many 
+#' three-variable covariance structures at the same time.
 #'
 #' @param c12 Vector of correlations between X_1 and X_2.
 #' @param c13 Vector of correlations between X_1 and X_3.
 #' @param c23 Vector of correlations between X_2 and X_3.
 #' @param num_samples Integer number of samples.
 #'
-#' @return Bayes factors for all correlations in the vectors
+#' @return BFCS for all correlation combinations contained in the vectors
 #' @export
 #'
 #' @examples
