@@ -71,7 +71,7 @@ package `DESCRIPTION` file.
 To install the package, open an R instance and run (from the BFCS folder):
 ```
 install.packages('devtools') # required package
-devtools::install_deps(".") # install BFCS package dependencies
+devtools::install_deps(".", dependencies = TRUE) # install BFCS package dependencies
 install.packages(".", repos = NULL, type = 'source') # install BFCS
 
 library(BFCS) # load the package
