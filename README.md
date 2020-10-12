@@ -49,9 +49,11 @@ can be run from R to produce the figures in the PGM 2018 article and the script
 Finally `reproduce-data.R` is a script for reproducing the simulated data and
 the pre-computed posterior probabilities.
 
+- The folder `tests` contains a few basic unit tests for the R package.
+
 - The top folder also contains the following files:
   - `DESCRIPTION` is the file describing the R package
-  - `NAMESPACE` is the file specifying the fucntions provided by the R package
+  - `NAMESPACE` is the file specifying the functions provided by the R package
   - `LICENSE.md` is the file containing the GPL-3 license
   
 ## Prerequisites
