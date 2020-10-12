@@ -144,7 +144,8 @@ PGM_PRROC_plot <- ggpubr::ggarrange(
   nrow = 2, ncol = 4,
   common.legend = TRUE, legend = "bottom"
 )
-ggsave(paste0(figures_dir, "PGM_Figure_4.pdf"), PGM_PRROC_plot, onefile = FALSE)
+ggsave(paste0(figures_dir, "PGM_Figure_4.pdf"), PGM_PRROC_plot,
+       width = 6, height = 4)
 
 # Collect Brier scores and organize them in a tibble
 PGM_Brier_scores_sparse_graph <- 
