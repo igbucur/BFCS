@@ -1,19 +1,7 @@
-
-
-#' @author Ioan Gabriel Bucur
-#' @description This script performs the simulations described in Subsection 4.1
-#' of the paper titled "A Bayesian Approach for Inferring Local Causal Structure
-#' in Gene Regulatory Networks" and its extension "Large-Scale Local Causal 
-#' Inference of Gene Regulatory Relationships". The purpose of this simulation 
-#' is to empirically show that BFCS consistently recovers the correct local 
-#' causal structure for multivariate Gaussian and conditionally Gaussian data.
-
-
 # 0. Setup ----------------------------------------------------------------
 
 ## Load libraries and scripts
-source('R/compute_BFCS.R')
-source('R/compute_prior_structures.R')
+source('R/compute_BFCS_vectorized.R')
 source('R/compute_BGe_score_vectorized.R')
 source('R/simulate_GRN.R')
 source('R/infer_GRN.R')
