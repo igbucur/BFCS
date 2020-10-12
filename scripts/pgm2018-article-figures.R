@@ -8,7 +8,6 @@ library(precrec) # needed for computing the ROC / PRC values
 library(DescTools) # for computing the Brier score
 library(ggpubr) # needed for plot layout (ggarrange)
 
-source('R/compute_prior_structures.R')
 source('R/utils.R')
 
 # Create folder where to put article figures
@@ -17,6 +16,14 @@ if (!dir.exists(figures_dir)) dir.create(figures_dir)
 
 prior_DAG <- uniform_prior_GRN_DAG()
 prior_DMAG <- uniform_prior_GRN_DMAG()
+
+PGM_theme <- theme_classic() + theme(
+  text = element_text(size = 15), 
+  legend.text = element_text(size = 15), 
+  legend.position = "bottom",
+  legend.key.size = unit(1.5, "lines"), 
+  legend.key.width = unit(1.5, "lines"),
+  aspect.ratio = 1, plot.margin = unit(c(0, 0, 0, 0), "lines"))
 
 
 # 4.1 Consistency of Detecting Local Causal Structures - Figure 3 ---------
@@ -41,7 +48,7 @@ plot_consistency_data <- function(Bayes_factors, prior = prior_DMAG) {
   ggplot(posterior_probabilities, aes(x = log10(num_obs), y = value, group = log10(num_obs))) +
     geom_boxplot(outlier.alpha = 0.1, color = 'darkblue', fill = 'lightblue') + ylim(c(0, 1)) +
     xlab("Number of samples on the base-10 logarithmic scale") +
-    ylab("Probability of causal model") + IJAR_theme
+    ylab("Probability of causal model") + PGM_theme
 }
 
 load('data/Bayes_factors_consistency.RData')
