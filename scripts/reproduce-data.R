@@ -12,7 +12,7 @@
 # 0. Setup ----------------------------------------------------------------
 
 ## Load libraries and scripts
-source('R/compute_Bayes_factors.R')
+source('R/compute_BFCS.R')
 source('R/compute_prior_structures.R')
 source('R/compute_BGe_score_vectorized.R')
 source('R/simulate_GRN.R')
@@ -73,7 +73,7 @@ Bayes_factors_consistency_reproduction$gaussian$causal <- sapply(num_obs_seq, fu
     cor[upper.tri(cor)]
   }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
+  Bfs <- compute_BFCS_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 }, simplify = FALSE)
@@ -98,7 +98,7 @@ Bayes_factors_consistency_reproduction$gaussian$independent <- sapply(num_obs_se
     cor[upper.tri(cor)]
   }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
+  Bfs <- compute_BFCS_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 }, simplify = FALSE)
@@ -125,7 +125,7 @@ Bayes_factors_consistency_reproduction$gaussian$full <- sapply(num_obs_seq, func
     cor[upper.tri(cor)]
   }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
+  Bfs <- compute_BFCS_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 }, simplify = FALSE)
@@ -155,7 +155,7 @@ Bayes_factors_consistency_reproduction$binomial$causal <- sapply(num_obs_seq, fu
     cor[upper.tri(cor)]
   }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
+  Bfs <- compute_BFCS_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 }, simplify = FALSE)
@@ -182,7 +182,7 @@ Bayes_factors_consistency_reproduction$binomial$independent <- sapply(num_obs_se
     cor[upper.tri(cor)]
   }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
+  Bfs <- compute_BFCS_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 }, simplify = FALSE)
@@ -210,7 +210,7 @@ Bayes_factors_consistency_reproduction$binomial$full <- sapply(num_obs_seq, func
     cor[upper.tri(cor)]
   }, mc.cores = num_cores))
   
-  Bfs <- compute_Bayes_factors_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
+  Bfs <- compute_BFCS_vectorized(corr_mats[1, ], corr_mats[2, ], corr_mats[3, ], num_samples = num_obs)
   
   t(Bfs)
 }, simplify = FALSE)
@@ -235,10 +235,10 @@ compute_simulated_GRN_probabilities <- function(
   
   results <- list()
   
-  results[['BFCS DAG']] <- compute_BFCS_probabilities(GRN, prior_DAG)
-  results[['BFCS DMAG']] <- compute_BFCS_probabilities(GRN, prior_DMAG)
-  results[['BFCS loclink']] <- compute_BFCS_probabilities(GRN, prior_DMAG, loc_link = trigger_obj@loc.obj$loc.idx)
-  results[['BGe']] <- compute_BGe_probabilities(GRN, prior_DMAG)
+  results[['BFCS DAG']] <- derive_BFCS_posterior_probabilities(GRN, prior_DAG)
+  results[['BFCS DMAG']] <- derive_BFCS_posterior_probabilities(GRN, prior_DMAG)
+  results[['BFCS loclink']] <- derive_BFCS_posterior_probabilities(GRN, prior_DMAG, loc_link = trigger_obj@loc.obj$loc.idx)
+  results[['BGe']] <- derive_BGe_posterior_probabilities(GRN, prior_DMAG)
   
   set.seed(trigger_runs_seed)
   trigger_seeds <- sample.int(10000L, trigger_num_runs) 
@@ -247,9 +247,9 @@ compute_simulated_GRN_probabilities <- function(
   for(i in 1:trigger_num_runs) {
     
     trigger_run <- paste("trigger", i)
-    results[[trigger_run]] <- compute_trigger_probabilities(GRN, trigger_obj, trigger_seeds[i], window.size = trigger_window_size)
+    results[[trigger_run]] <- derive_trigger_posterior_probabilities(GRN, trigger_obj, trigger_seeds[i], window.size = trigger_window_size)
     
-    # add results of individual run to average, take care that compute_trigger_probabilities may return NULL
+    # add results of individual run to average, take care that derive_trigger_posterior_probabilities may return NULL
     if (is.null(results[[trigger_run]]) || is.null(results[["trigger"]])) {
       results[["trigger"]] <- NULL
     } else {
@@ -323,8 +323,8 @@ yeast_GRN <- list(
   T.pos = yeast$exp.pos[subset, ]
 )
 
-yeast_BFCS_DMAG <- compute_BFCS_probabilities(yeast_GRN)
-yeast_trigger_w50k <- compute_trigger_probabilities(yeast_GRN)
+yeast_BFCS_DMAG <- derive_BFCS_posterior_probabilities(yeast_GRN)
+yeast_trigger_w50k <- derive_trigger_posterior_probabilities(yeast_GRN)
 
 # 5. Computational and Time Complexity - Figure 8 and 9 IJAR ---------------
 
@@ -356,8 +356,8 @@ compare_time_on_simulated_GRN <- function(GRN) {
   
   print(paste("Number of observations:", num_obs, "; Number of variables:", num_var))
   
-  time_BFCS <- system.time(compute_BFCS_probabilities(GRN))
-  time_BGe <- system.time(compute_BGe_probabilities(GRN))
+  time_BFCS <- system.time(derive_BFCS_posterior_probabilities(GRN))
+  time_BGe <- system.time(derive_BGe_posterior_probabilities(GRN))
   
   # # We first need to build the trigger object and look for local linkage
   trigger_obj <- trigger::trigger.build(marker = GRN$L, exp = GRN$Trait,
@@ -365,7 +365,7 @@ compare_time_on_simulated_GRN <- function(GRN) {
   capture.output(trigger_obj <- trigger::trigger.loclink(trigger_obj))
   
   # We only consider the time it takes trigger to compute the probabilities
-  time_trigger <- system.time(trigger::trigger_result <- compute_trigger_probabilities(GRN, trigger_obj, seed))
+  time_trigger <- system.time(trigger::trigger_result <- derive_trigger_posterior_probabilities(GRN, trigger_obj, seed))
   if (is.null(trigger_result)) time_trigger['elapsed'] <- NA
   
   c(BFCS = time_BFCS['elapsed'],
