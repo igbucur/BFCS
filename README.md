@@ -53,6 +53,30 @@ the pre-computed posterior probabilities.
   - `DESCRIPTION` is the file describing the R package
   - `NAMESPACE` is the file specifying the fucntions provided by the R package
   - `LICENSE.md` is the file containing the GPL-3 license
+  
+## Prerequisites
+
+In order to install the software, [R](https://cran.r-project.org/) must be 
+downloaded and installed. For reproducing the tables from the articles, the TeX
+system including XeTeX is required. A portable distribution satisfying this
+requirement is [TeX Live](https://www.tug.org/texlive/).
+  
+## Installation Instructions
+
+Download the software from GitHub with the following command:
+`git clone https://github.com/igbucur/BFCS.git`. For installing and running the 
+BFCS R package, several R package are required. These are specified in the 
+package `DESCRIPTION` file.
+
+To install the package, open an R instance and run (from the BFCS folder):
+```
+install.packages('devtools') # required package
+devtools::install_deps(".") # install BFCS package dependencies
+install.packages(".", repos = NULL, type = 'source') # install BFCS
+
+library(BFCS) # load the package
+help(package = "BFCS") # see available functions
+```
 
 ## Licensing
 
