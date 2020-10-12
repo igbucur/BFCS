@@ -13,9 +13,9 @@
 #'
 #' @examples
 #' GRN <- simulate_GRN(10, 10, 1000, 0.1)
-#' compute_BFCS_probabilities(GRN)
-#' compute_BFCS_probabilities(GRN, loc_link = 10:1)
-compute_BFCS_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG(), loc_link = NULL) {
+#' derive_BFCS_posterior_probabilities(GRN)
+#' derive_BFCS_posterior_probabilities(GRN, loc_link = 10:1)
+derive_BFCS_posterior_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG(), loc_link = NULL) {
   
   ngen <- nrow(GRN$L)
   nexp <- nrow(GRN$Trait)
@@ -65,8 +65,8 @@ compute_BFCS_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG(), lo
 #'
 #' @examples
 #' GRN <- simulate_GRN(10, 10, 100, 0.1)
-#' compute_BGe_probabilities(GRN)
-compute_BGe_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG()) {
+#' derive_BGe_posterior_probabilities(GRN)
+derive_BGe_posterior_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG()) {
   
   ngen <- nrow(GRN$L)
   nexp <- nrow(GRN$Trait)
@@ -115,8 +115,8 @@ compute_BGe_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG()) {
 #'
 #' @examples
 #' GRN <- simulate_GRN(5, 5, 100, 0.1)
-#' compute_BiDAG_probabilities(GRN)
-compute_BiDAG_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG()) {
+#' derive_BiDAG_posterior_probabilities(GRN)
+derive_BiDAG_posterior_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG()) {
   
   ngen <- nrow(GRN$L)
   nexp <- nrow(GRN$Trait)
@@ -174,8 +174,8 @@ compute_BiDAG_probabilities <- function(GRN, prior = uniform_prior_GRN_DMAG()) {
 #'
 #' @examples
 #' GRN <- simulate_GRN(100, 100, 100, 0.01)
-#' compute_trigger_probabilities(GRN)
-compute_trigger_probabilities <- function(GRN, trigger_obj = NULL, seed = NULL, window.size = 50000) {
+#' derive_trigger_posterior_probabilities(GRN)
+derive_trigger_posterior_probabilities <- function(GRN, trigger_obj = NULL, seed = NULL, window.size = 50000) {
   
   if (is.null(trigger_obj)) {
     trigger_obj <- trigger::trigger.build(marker = GRN$L, exp = GRN$Trait, 
