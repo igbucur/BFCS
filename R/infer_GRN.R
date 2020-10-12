@@ -1,5 +1,5 @@
 #' Compute the posterior probabilities of L_k -> T_i -> T_j for a simulated GRN 
-#' using BFCS::compute_Bayes_factors_vectorized.
+#' using BFCS::compute_BFCS_vectorized.
 #'
 #' @param GRN List produced by simulate_GRN containing GRN structure and statistics.
 #' @param prior Prior on causal graphs (default uniform on DMAGs with bkg. info.)
@@ -27,7 +27,7 @@ derive_BFCS_posterior_probabilities <- function(GRN, prior = uniform_prior_GRN_D
   cTT <- GRN$cor.matrix[(ngen+1):(ngen+nexp), (ngen+1):(ngen+nexp)]
   
   Bayes_factors <- lapply(1:nexp, function(i) {
-    compute_Bayes_factors_vectorized(rep(cLT[, i], nexp), c(cLT), rep(cTT[i, ], each = ngen),
+    compute_BFCS_vectorized(rep(cLT[, i], nexp), c(cLT), rep(cTT[i, ], each = ngen),
                                      num_samples = ncol(GRN$L))
   })
   

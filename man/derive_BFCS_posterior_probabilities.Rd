@@ -3,7 +3,7 @@
 \name{derive_BFCS_posterior_probabilities}
 \alias{derive_BFCS_posterior_probabilities}
 \title{Compute the posterior probabilities of L_k -> T_i -> T_j for a simulated GRN 
-using BFCS::compute_Bayes_factors_vectorized.}
+using BFCS::compute_BFCS_vectorized.}
 \usage{
 derive_BFCS_posterior_probabilities(
   GRN,
@@ -26,7 +26,7 @@ relationship between the expression traits.
 }
 \description{
 Compute the posterior probabilities of L_k -> T_i -> T_j for a simulated GRN 
-using BFCS::compute_Bayes_factors_vectorized.
+using BFCS::compute_BFCS_vectorized.
 }
 \examples{
 GRN <- simulate_GRN(10, 10, 1000, 0.1)
