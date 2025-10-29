@@ -24,10 +24,9 @@ Imports: Rcpp,
     qtl,
     bnlearn,
     BiDAG,
-    pcalg,
-    trigger
+    pcalg
 RdMacros: Rdpack
-Remotes: igbucur/trigger,
+Remotes: 
     bioc::release/graph,
     bioc::release/RBGL,
     bioc::release/Rgraphviz,
