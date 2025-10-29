@@ -72,9 +72,8 @@ package `DESCRIPTION` file.
 
 To install the package, open an R instance and run (from the BFCS folder):
 ```
-install.packages('devtools') # required package
-devtools::install_deps(".", dependencies = TRUE) # install BFCS package dependencies
-install.packages(".", repos = NULL, type = 'source') # install BFCS
+install.packages('remotes') # required package
+remotes::install_github("igbucur/BFCS", dependencies = TRUE) # install BFCS package and dependencies
 
 library(BFCS) # load the package
 help(package = "BFCS") # see available functions
