@@ -22,8 +22,10 @@ the follow-up extension titled "[Large-scale Local Causal Inference of Gene Regu
 Relationships](https://doi.org/10.1016/j.ijar.2019.08.012). The data set also 
 contains simulated data necessary for reproducing the figures in the article as 
 well as routines necessary for recreating it. This research is presented in 
-Chapter 3 of the PhD thesis titled "Being Bayesian about Causal Inference" by
-Ioan Gabriel Bucur. The code is written in the R and C++ programming languages.
+Chapter 3 of the PhD thesis titled "[Being Bayesian about Causal Inference](https://repository.ubn.ru.nl/bitstream/handle/2066/226922/226922.pdf)" by
+Ioan Gabriel Bucur. For downloading the (now deprecated) code version at time of
+publication, please go to: https://github.com/igbucur/BFCS/tree/publication. 
+The code is written in the R and C++ programming languages.
 
 ## Structure
 
